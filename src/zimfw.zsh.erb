@@ -1,20 +1,14 @@
 <%
 class Zim
-  attr_reader :version, :home, :min_zsh_version, :url_regex,
-      :clear_line, :ellipsis, :okay, :warn, :error, :done, :failed
+  attr_reader :home, :min_zsh_version, :startup_files_glob, :version, :ellipsis, :okay, :error, :done, :failed
 
   def initialize
-    @version = "1.12.0-SNAPSHOT"
     @home = "${ZDOTDIR:-${HOME}}"
     @min_zsh_version = "5.2"
-    # Matches {ssh,http,https,git}://{user@,}host/org/repo and {user@,}host:org/repo
-    # but not file:///path/to/repo or /path/to/repo
-    # ${match[3]} contains host, and ${match[4]} contains org/repo
-    @url_regex = "^([^:@/]+://)?([^@]+@)?([^:/]+)[:/]([^/]+/[^/]+)/?$"
-    @clear_line = "$'\\E[2K\\r'"
+    @startup_files_glob = ".z(shenv|profile|shrc|login|logout)"
+    @version = "1.2.0-SNAPSHOT"
     @ellipsis = " ..."
     @okay = "%F{green})%f "
-    @warn = "! "
     @error = "x "
     @done = ""
     @failed = ""
@@ -28,6 +22,10 @@ class Zim
     Dir[pattern].sort.map { |filename| render(filename) }.join("\n")
   end
 
+  def render_escaped(filename)
+    render(filename).gsub(/(?=\$[^']|"|`)/, "\\\\")
+  end
+
   def render_commented(filename)
     render(filename).gsub(/^(?=.)/, "# ").gsub(/^$/, "#")
   end
@@ -38,8 +36,4 @@ zim = Zim.new
 
 <%= zim.render_commented("LICENSE") %>
 <%= zim.render_all("src/stage2/*.erb") %>
-if [[ ${functrace[1]} == zmodule:* ]]; then
-  zmodule "${@}"
-else
-  zimfw "${@}"
-fi
+zimfw "${@}"

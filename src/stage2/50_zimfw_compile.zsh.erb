@@ -1,12 +1,5 @@
 _zimfw_compile() {
-  # Compile Zim scripts
-  local zroot_dir zfile
-  for zroot_dir in ${_zroot_dirs:|_zdisabled_root_dirs}; do
-    for zfile in ${zroot_dir}/(^*test*/)#*.zsh(|-theme)(N-.); do
-      if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
-        zcompile -UR ${zfile} && _zimfw_print -PR "<%= okay %>%B${zfile}.zwc:%b Compiled"
-      fi
-    done
-  done
-  _zimfw_print -P '<%= done %>Done with compile.'
+  local zopt
+  if (( _zprintlevel <= 0 )) zopt='-q'
+  source ${ZIM_HOME}/login_init.zsh ${zopt}
 }
